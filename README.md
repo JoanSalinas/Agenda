@@ -1,50 +1,103 @@
-# Welcome to your Expo app 👋
+# 📅 Agenda
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Una aplicació móbil per gestionar el teu calendari i contactes personals. Construïda amb [Expo](https://expo.dev) i React Native.
 
-## Get started
+## ✨ Característiques
 
-1. Install dependencies
+- 📆 **Calendari interactiu** - Visualitza i gestiona els teus eventos
+- 👥 **Gestió de contactes** - Manté els teus contactes personals organitzats
+- 📝 **Añadir events** - Crea nous eventos de manera senzilla
+- 👤 **Gestió de persones** - Afegeix i administra gent
+- 🔔 **Notificacions** - Rebeix recordatoris pels teus events
+- 📱 **Multi-plataforma** - Funciona a Android, iOS i web
 
+## 🚀 Primeros pasos
+
+### Requisits previos
+
+- [Node.js](https://nodejs.org/) (versió 18 o superior)
+- npm o yarn
+- [Expo CLI](https://docs.expo.dev/get-started/installation/) (opcional però recomanat)
+
+### Instal·lació
+
+1. Clona el repositori:
+   ```bash
+   git clone https://github.com/tu-usuari/agenda.git
+   cd Agenda
+   ```
+
+2. Instal·la les dependències:
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. Inicia l'aplicació:
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+### Execució de l'aplicació
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Després d'executar `npx expo start`, veuràs opcions per executar l'app en:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- [Development Build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Emulador d'Android](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [Simulador d'iOS](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go) - Aplicació oficial d'Expo per provar
 
-## Get a fresh project
+## 📁 Estructura del projecte
 
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+├── app/                 # Lògica i rutes principals
+│   ├── (tabs)/         # Pestanyes principals de la navegació
+│   ├── add-entry.tsx   # Pantalla per afegir events
+│   └── add-person.tsx  # Pantalla per afegir contactes
+├── components/         # Components reutilitzables
+│   ├── calendar/       # Components del calendari
+│   ├── people/         # Components de contactes
+│   └── ui/             # Components generals d'interfície
+├── lib/                # Utilitats i models
+├── constants/          # Constants de l'aplicació (temes, etc.)
+└── hooks/              # React Hooks personalitzats
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🛠️ Desenvolupament
 
-## Learn more
+### Comandos disponibles
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm start          # Inicia l'app en mode desenvolupament
+npm run android    # Executa a Android
+npm run ios        # Executa a iOS
+npm run web        # Executa versió web
+npm run lint       # Analitza el codi
+npm run reset-project # Reinicia el projecte
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Tecnologies utilitzades
 
-## Join the community
+- [Expo Router](https://docs.expo.dev/router/introduction/) - Navegació amb routing basat en fitxers
+- [React Native](https://reactnative.dev/) - Framework per aplicacions móbils
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Async Storage](https://react-native-async-storage.github.io/async-storage/) - Emmagatzematge local
+- [Expo Notifications](https://docs.expo.dev/notifications/overview/) - Sistema de notificacions
 
-Join our community of developers creating universal apps.
+## 📚 Més informació
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Documentació d'Expo](https://docs.expo.dev/) - Guies completes i tutorials
+- [Tutorial pas a pas d'Expo](https://docs.expo.dev/tutorial/introduction/)
+- [React Native docs](https://reactnative.dev/docs/getting-started)
+
+## 🤝 Comunitat
+
+- [Expo a GitHub](https://github.com/expo/expo) - Plataforma open source
+- [Comunitat Discord](https://chat.expo.dev) - Xateja amb altres desenvolupadors
+
+## 📄 Llicència
+
+Aquest projecte es distribueix sota la llicència MIT.
+
+---
+
+**Versió:** 1.0.0
