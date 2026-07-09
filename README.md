@@ -4,30 +4,26 @@ Una aplicació móbil per gestionar el teu calendari i contactes personals. Cons
 
 ## ✨ Característiques
 
-- 📆 **Calendari interactiu** - Visualitza i gestiona els teus eventos
+- 📆 **Calendari interactiu** - Visualitza i gestiona els teus events
 - 👥 **Gestió de contactes** - Manté els teus contactes personals organitzats
-- 📝 **Añadir events** - Crea nous eventos de manera senzilla
+- 📝 **Añadir events** - Crea nous events de manera senzilla
 - 👤 **Gestió de persones** - Afegeix i administra gent
 - 🔔 **Notificacions** - Rebeix recordatoris pels teus events
 - 📱 **Multi-plataforma** - Funciona a Android, iOS i web
 
 ## 🚀 Primeros pasos
 
-### Requisits previos
-
-- [Node.js](https://nodejs.org/) (versió 18 o superior)
-- npm o yarn
-- [Expo CLI](https://docs.expo.dev/get-started/installation/) (opcional però recomanat)
-
 ### Instal·lació
 
 1. Clona el repositori:
+
    ```bash
    git clone https://github.com/tu-usuari/agenda.git
    cd Agenda
    ```
 
 2. Instal·la les dependències:
+
    ```bash
    npm install
    ```
@@ -63,17 +59,6 @@ Després d'executar `npx expo start`, veuràs opcions per executar l'app en:
 ```
 
 ## 🛠️ Desenvolupament
-
-### Comandos disponibles
-
-```bash
-npm start          # Inicia l'app en mode desenvolupament
-npm run android    # Executa a Android
-npm run ios        # Executa a iOS
-npm run web        # Executa versió web
-npm run lint       # Analitza el codi
-npm run reset-project # Reinicia el projecte
-```
 
 ### Tecnologies utilitzades
 
