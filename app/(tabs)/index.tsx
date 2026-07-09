@@ -1,98 +1,236 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { CalendarGrid } from "@/components/calendar/CalendarGrid";
+import { DayDetail } from "@/components/calendar/DayDetail";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { CalendarEntry } from "@/lib/models";
+import {
+  deleteEntry,
+  getEntriesForDate,
+  getEntriesForMonth,
+} from "@/lib/storage";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
-export default function HomeScreen() {
+export default function CalendarScreen() {
+  const colorScheme = useColorScheme() ?? "dark";
+  const colors = Colors[colorScheme as "light" | "dark"];
+  const router = useRouter();
+
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth()); // 0-indexed
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+  const [datesWithEntries, setDatesWithEntries] = useState<Set<string>>(
+    new Set(),
+  );
+  const [dayEntries, setDayEntries] = useState<CalendarEntry[]>([]);
+
+  const loadMonth = useCallback(async () => {
+    const entries = await getEntriesForMonth(year, month + 1);
+    const dateSet = new Set(entries.map((e) => e.date));
+    setDatesWithEntries(dateSet);
+  }, [year, month]);
+
+  const loadDay = useCallback(async () => {
+    if (selectedDate) {
+      const entries = await getEntriesForDate(selectedDate);
+      setDayEntries(entries.sort((a, b) => a.createdAt - b.createdAt));
+    }
+  }, [selectedDate]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadMonth();
+      loadDay();
+    }, [loadMonth, loadDay]),
+  );
+
+  const goToPrevMonth = () => {
+    if (month === 0) {
+      setMonth(11);
+      setYear(year - 1);
+    } else {
+      setMonth(month - 1);
+    }
+  };
+
+  const goToNextMonth = () => {
+    if (month === 11) {
+      setMonth(0);
+      setYear(year + 1);
+    } else {
+      setMonth(month + 1);
+    }
+  };
+
+  const handleSelectDate = (date: string) => {
+    setSelectedDate(date);
+    // If selected date changes month, update month
+    const [y, m] = date.split("-").map(Number);
+    if (y !== year || m - 1 !== month) {
+      setYear(y);
+      setMonth(m - 1);
+    }
+  };
+
+  const handleDeleteEntry = async (id: string) => {
+    await deleteEntry(id);
+    await loadMonth();
+    await loadDay();
+  };
+
+  const handleAddEntry = () => {
+    router.push({ pathname: "/add-entry", params: { date: selectedDate } });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Calendar
+        </Text>
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* Month navigation */}
+      <View style={[styles.monthNav, { backgroundColor: colors.surface }]}>
+        <TouchableOpacity onPress={goToPrevMonth} style={styles.navButton}>
+          <MaterialIcons name="chevron-left" size={28} color={colors.tint} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setMonth(now.getMonth());
+            setYear(now.getFullYear());
+          }}
+        >
+          <Text style={[styles.monthTitle, { color: colors.text }]}>
+            {MONTH_NAMES[month]} {year}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={goToNextMonth} style={styles.navButton}>
+          <MaterialIcons name="chevron-right" size={28} color={colors.tint} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Calendar grid */}
+        <View
+          style={[
+            styles.calendarCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <CalendarGrid
+            year={year}
+            month={month}
+            selectedDate={selectedDate}
+            datesWithEntries={datesWithEntries}
+            onSelectDate={handleSelectDate}
+          />
+        </View>
+
+        {/* Day detail */}
+        {selectedDate && (
+          <DayDetail
+            date={selectedDate}
+            entries={dayEntries}
+            onDeleteEntry={handleDeleteEntry}
+          />
+        )}
+      </ScrollView>
+
+      {/* FAB */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: colors.fab }]}
+        onPress={handleAddEntry}
+        activeOpacity={0.8}
+      >
+        <MaterialIcons name="add" size={28} color={colors.fabText} />
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  screen: {
+    flex: 1,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  header: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+  },
+  monthNav: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  navButton: {
+    padding: 4,
+  },
+  monthTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  calendarCard: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: "hidden",
+    paddingTop: 8,
+  },
+  fab: {
+    position: "absolute",
+    bottom: 28,
+    right: 20,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 6,
+    shadowColor: "#6C63FF",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
   },
 });
