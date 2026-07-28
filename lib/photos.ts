@@ -1,11 +1,12 @@
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
+import { supabase } from "./supabase";
 
-// Use cache directory for photos
+// Use cache directory for local photo fallback
 const PHOTOS_DIR = `${(FileSystem as any).cacheDirectory || (FileSystem as any).documentDirectory}photos/`;
 
 /**
- * Ensure the photos directory exists
+ * Ensure the local photos directory exists
  */
 async function ensurePhotosDir(): Promise<void> {
   try {
@@ -63,9 +64,54 @@ export async function takePhoto(): Promise<string | null> {
 }
 
 /**
- * Save a photo to persistent storage
- * @param uri - The temporary URI from ImagePicker or camera
- * @returns The permanent URI for the saved photo
+ * Upload a photo to Supabase Storage, or save locally if Supabase is unavailable
+ */
+export async function savePhoto(uri: string): Promise<string> {
+  if (uri.startsWith("http://") || uri.startsWith("https://")) {
+    return uri; // Already uploaded
+  }
+
+  try {
+    const isConfigured = Boolean(
+      process.env.EXPO_PUBLIC_SUPABASE_URL && process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    if (isConfigured) {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const fileExt = uri.split(".").pop()?.split("?")[0] || "jpg";
+      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}.${fileExt}`;
+      const filePath = `uploads/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from("photos")
+        .upload(filePath, blob, {
+          contentType: `image/${fileExt === "png" ? "png" : "jpeg"}`,
+          upsert: true,
+        });
+
+      if (!error && data?.path) {
+        const { data: publicUrlData } = supabase.storage
+          .from("photos")
+          .getPublicUrl(data.path);
+
+        if (publicUrlData?.publicUrl) {
+          return publicUrlData.publicUrl;
+        }
+      } else if (error) {
+        console.warn("Supabase photo upload failed, falling back locally:", error.message);
+      }
+    }
+  } catch (err) {
+    console.warn("Error uploading to Supabase storage, using local storage:", err);
+  }
+
+  return savePhotoLocally(uri);
+}
+
+/**
+ * Save a photo to local persistent storage (Fallback)
  */
 export async function savePhotoLocally(uri: string): Promise<string> {
   try {
@@ -74,7 +120,6 @@ export async function savePhotoLocally(uri: string): Promise<string> {
     const filename = `${Date.now()}.jpg`;
     const destinationUri = `${PHOTOS_DIR}${filename}`;
 
-    // Copy the file to persistent storage
     await FileSystem.copyAsync({
       from: uri,
       to: destinationUri,
@@ -88,11 +133,17 @@ export async function savePhotoLocally(uri: string): Promise<string> {
 }
 
 /**
- * Delete a photo from persistent storage
+ * Delete a photo from Supabase Storage or local persistent storage
  */
 export async function deletePhoto(uri: string): Promise<void> {
   try {
-    // Only delete if it's in our photos directory
+    if (uri.includes("supabase.co/storage")) {
+      const parts = uri.split("/photos/");
+      if (parts[1]) {
+        await supabase.storage.from("photos").remove([parts[1]]);
+      }
+      return;
+    }
     if (uri.includes(PHOTOS_DIR)) {
       await FileSystem.deleteAsync(uri, { idempotent: true });
     }
@@ -102,7 +153,7 @@ export async function deletePhoto(uri: string): Promise<void> {
 }
 
 /**
- * Get all stored photos
+ * Get all stored local photos
  */
 export async function getAllPhotos(): Promise<string[]> {
   try {
@@ -116,7 +167,7 @@ export async function getAllPhotos(): Promise<string[]> {
 }
 
 /**
- * Clear all stored photos
+ * Clear all stored local photos
  */
 export async function clearAllPhotos(): Promise<void> {
   try {
