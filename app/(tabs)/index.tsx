@@ -2,6 +2,8 @@ import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { DayDetail } from "@/components/calendar/DayDetail";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "@/i18n/LanguageContext";
+import { translations } from "@/i18n";
 import { CalendarEntry } from "@/lib/models";
 import {
   deleteEntry,
@@ -19,25 +21,13 @@ import {
   View,
 } from "react-native";
 
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
 export default function CalendarScreen() {
   const colorScheme = useColorScheme() ?? "dark";
   const colors = Colors[colorScheme as "light" | "dark"];
   const router = useRouter();
+  const { t, language } = useTranslation();
+
+  const monthNames = translations[language].calendar.months;
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -112,7 +102,7 @@ export default function CalendarScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>
-          Calendar
+          {t("calendar.title")}
         </Text>
       </View>
 
@@ -128,7 +118,7 @@ export default function CalendarScreen() {
           }}
         >
           <Text style={[styles.monthTitle, { color: colors.text }]}>
-            {MONTH_NAMES[month]} {year}
+            {monthNames[month]} {year}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={goToNextMonth} style={styles.navButton}>

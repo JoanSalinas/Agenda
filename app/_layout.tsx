@@ -10,6 +10,9 @@ import "react-native-reanimated";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
+import { LanguageProvider } from "@/i18n/LanguageContext";
+import { AuthProvider } from "@/lib/AuthContext";
+
 export const unstable_settings = {
   anchor: "(tabs)",
 };
@@ -44,27 +47,39 @@ export default function RootLayout() {
         };
 
   return (
-    <ThemeProvider value={navTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="add-entry"
-          options={{
-            presentation: "modal",
-            headerShown: false,
-            animation: "slide_from_bottom",
-          }}
-        />
-        <Stack.Screen
-          name="add-person"
-          options={{
-            presentation: "modal",
-            headerShown: false,
-            animation: "slide_from_bottom",
-          }}
-        />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthProvider>
+      <LanguageProvider>
+        <ThemeProvider value={navTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="add-entry"
+              options={{
+                presentation: "modal",
+                headerShown: false,
+                animation: "slide_from_bottom",
+              }}
+            />
+            <Stack.Screen
+              name="add-person"
+              options={{
+                presentation: "modal",
+                headerShown: false,
+                animation: "slide_from_bottom",
+              }}
+            />
+            <Stack.Screen
+              name="login"
+              options={{
+                presentation: "modal",
+                headerShown: false,
+                animation: "slide_from_bottom",
+              }}
+            />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </LanguageProvider>
+    </AuthProvider>
   );
 }

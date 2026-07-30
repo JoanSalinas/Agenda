@@ -1,9 +1,9 @@
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "@/i18n/LanguageContext";
 import {
   CalendarEntry,
   CATEGORY_COLORS,
-  CATEGORY_LABELS,
   EntryCategory,
   Person,
   RecurrenceType,
@@ -60,6 +60,7 @@ export default function AddEntryScreen() {
   const colorScheme = useColorScheme() ?? "dark";
   const colors = Colors[colorScheme];
   const router = useRouter();
+  const { t, locale } = useTranslation();
   const { date, entryId } = useLocalSearchParams<{
     date: string;
     entryId: string;
@@ -185,7 +186,7 @@ export default function AddEntryScreen() {
       name,
       phone: "",
       email: "",
-      notes: "Added from agenda entry auto-detection",
+      notes: t("addPerson.autoNotes"),
     });
     setAllPeople((prev) => [...prev, saved]);
     setSelectedPeopleIds((prev) => [...prev, saved.id]);
@@ -240,7 +241,7 @@ export default function AddEntryScreen() {
   const formatDisplayDate = (dateStr: string) => {
     const [y, m, d] = dateStr.split("-").map(Number);
     const dt = new Date(y, m - 1, d);
-    return dt.toLocaleDateString("en-US", {
+    return dt.toLocaleDateString(locale, {
       weekday: "short",
       month: "long",
       day: "numeric",
@@ -306,7 +307,7 @@ export default function AddEntryScreen() {
           <MaterialIcons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.topBarTitle, { color: colors.text }]}>
-          {isEditMode ? "Edit Entry" : "New Entry"}
+          {isEditMode ? t("addEntry.editTitle") : t("addEntry.newTitle")}
         </Text>
         <TouchableOpacity
           onPress={handleSave}
@@ -326,7 +327,7 @@ export default function AddEntryScreen() {
               { color: title.trim() ? "#FFFFFF" : colors.placeholder },
             ]}
           >
-            Save
+            {t("common.save")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -338,7 +339,7 @@ export default function AddEntryScreen() {
         >
           <MaterialIcons name="event" size={18} color={colors.tint} />
           <Text style={[styles.dateText, { color: colors.text }]}>
-            {date ? formatDisplayDate(date) : "Today"}
+            {date ? formatDisplayDate(date) : t("common.today")}
           </Text>
         </View>
 
@@ -348,7 +349,7 @@ export default function AddEntryScreen() {
             styles.titleInput,
             { color: colors.text, borderBottomColor: colors.border },
           ]}
-          placeholder="What happened?"
+          placeholder={t("addEntry.titlePlaceholder")}
           placeholderTextColor={colors.placeholder}
           value={title}
           onChangeText={setTitle}
@@ -362,7 +363,7 @@ export default function AddEntryScreen() {
             styles.descriptionInput,
             { color: colors.text, backgroundColor: colors.inputBackground },
           ]}
-          placeholder="Add details..."
+          placeholder={t("addEntry.descriptionPlaceholder")}
           placeholderTextColor={colors.placeholder}
           value={description}
           onChangeText={setDescription}
@@ -375,7 +376,7 @@ export default function AddEntryScreen() {
         {/* Photos Section */}
         <View style={styles.photosSection}>
           <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-            PHOTOS
+            {t("addEntry.photosLabel")}
           </Text>
           <View style={styles.photosContainer}>
             {photos.map((uri, idx) => (
@@ -410,7 +411,7 @@ export default function AddEntryScreen() {
                   <Text
                     style={[styles.photoMenuBtnText, { color: colors.text }]}
                   >
-                    Gallery
+                    {t("common.gallery")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -425,7 +426,7 @@ export default function AddEntryScreen() {
                   <Text
                     style={[styles.photoMenuBtnText, { color: colors.text }]}
                   >
-                    Camera
+                    {t("common.camera")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -454,20 +455,22 @@ export default function AddEntryScreen() {
             <View style={styles.promptHeader}>
               <MaterialIcons name="person-add" size={20} color={colors.tint} />
               <Text style={[styles.promptTitle, { color: colors.text }]}>
-                {`Vols afegir "${name}"?`}
+                {t("addEntry.promptTitle", { name })}
               </Text>
             </View>
             <Text
               style={[styles.promptSubtitle, { color: colors.textSecondary }]}
             >
-              No és a la teva llista de contactes. El vols afegir ara?
+              {t("addEntry.promptSubtitle")}
             </Text>
             <View style={styles.promptActions}>
               <TouchableOpacity
                 style={[styles.promptButton, { backgroundColor: colors.tint }]}
                 onPress={() => handleAddContact(name)}
               >
-                <Text style={styles.promptButtonText}>Afegir</Text>
+                <Text style={styles.promptButtonText}>
+                  {t("addEntry.promptAdd")}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
@@ -482,7 +485,7 @@ export default function AddEntryScreen() {
                     { color: colors.textSecondary },
                   ]}
                 >
-                  Ignorar
+                  {t("addEntry.promptIgnore")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -495,7 +498,7 @@ export default function AddEntryScreen() {
             <Text
               style={[styles.sectionLabel, { color: colors.textSecondary }]}
             >
-              AMB (PERSONES)
+              {t("addEntry.peopleLabel")}
             </Text>
             <View style={styles.peopleChipsRow}>
               {selectedPeople.map((person) => (
@@ -536,7 +539,7 @@ export default function AddEntryScreen() {
 
         {/* Category */}
         <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-          CATEGORY
+          {t("addEntry.categoryLabel")}
         </Text>
         <View style={styles.categoryGrid}>
           {CATEGORIES.map((cat) => {
@@ -573,7 +576,7 @@ export default function AddEntryScreen() {
                     },
                   ]}
                 >
-                  {CATEGORY_LABELS[cat]}
+                  {t(`categories.${cat}`)}
                 </Text>
               </TouchableOpacity>
             );
@@ -582,7 +585,7 @@ export default function AddEntryScreen() {
 
         {/* Recurrence Section */}
         <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-          RECURRENCE
+          {t("addEntry.recurrenceLabel")}
         </Text>
         <View style={styles.recurrenceGrid}>
           {RECURRENCE_OPTIONS.map((rec) => {
@@ -607,7 +610,7 @@ export default function AddEntryScreen() {
                     { color: isActive ? colors.tint : colors.textSecondary },
                   ]}
                 >
-                  {rec.charAt(0).toUpperCase() + rec.slice(1)}
+                  {t(`recurrence.${rec}`)}
                 </Text>
               </TouchableOpacity>
             );
@@ -625,7 +628,7 @@ export default function AddEntryScreen() {
             <MaterialIcons name="event" size={18} color={colors.tint} />
             <TextInput
               style={[styles.endDateInput, { color: colors.text }]}
-              placeholder="End date (YYYY-MM-DD)"
+              placeholder={t("addEntry.endDatePlaceholder")}
               placeholderTextColor={colors.placeholder}
               value={recurrenceEndDate}
               onChangeText={setRecurrenceEndDate}
@@ -635,7 +638,7 @@ export default function AddEntryScreen() {
 
         {/* Notification Section */}
         <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-          NOTIFICATIONS
+          {t("addEntry.notificationsLabel")}
         </Text>
         <View
           style={[
@@ -649,7 +652,7 @@ export default function AddEntryScreen() {
           <View style={styles.notificationLabel}>
             <MaterialIcons name="notifications" size={18} color={colors.tint} />
             <Text style={[styles.notificationText, { color: colors.text }]}>
-              Send notification
+              {t("addEntry.sendNotification")}
             </Text>
           </View>
           <TouchableOpacity
@@ -684,7 +687,7 @@ export default function AddEntryScreen() {
             <MaterialIcons name="schedule" size={18} color={colors.tint} />
             <TextInput
               style={[styles.minutesInput, { color: colors.text }]}
-              placeholder="Minutes before"
+              placeholder={t("addEntry.minutesBeforePlaceholder")}
               placeholderTextColor={colors.placeholder}
               value={notifyMinutesBefore.toString()}
               onChangeText={(text) =>
@@ -695,7 +698,7 @@ export default function AddEntryScreen() {
             <Text
               style={[styles.minutesLabel, { color: colors.textSecondary }]}
             >
-              minutes before
+              {t("addEntry.minutesBeforeLabel")}
             </Text>
           </View>
         )}

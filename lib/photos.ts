@@ -1,5 +1,6 @@
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
+import { shouldUseCloud } from "./AuthContext";
 import { supabase } from "./supabase";
 
 // Use cache directory for local photo fallback
@@ -64,7 +65,7 @@ export async function takePhoto(): Promise<string | null> {
 }
 
 /**
- * Upload a photo to Supabase Storage, or save locally if Supabase is unavailable
+ * Upload a photo to Supabase Storage, or save locally if cloud is not active
  */
 export async function savePhoto(uri: string): Promise<string> {
   if (uri.startsWith("http://") || uri.startsWith("https://")) {
@@ -72,11 +73,7 @@ export async function savePhoto(uri: string): Promise<string> {
   }
 
   try {
-    const isConfigured = Boolean(
-      process.env.EXPO_PUBLIC_SUPABASE_URL && process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
-    );
-
-    if (isConfigured) {
+    if (shouldUseCloud()) {
       const response = await fetch(uri);
       const blob = await response.blob();
 

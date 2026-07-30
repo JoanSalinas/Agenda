@@ -5,6 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ContactCard } from '@/components/people/ContactCard';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/i18n/LanguageContext';
 import { getAllPeople, deletePerson } from '@/lib/storage';
 import { Person } from '@/lib/models';
 
@@ -12,6 +13,7 @@ export default function PeopleScreen() {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [people, setPeople] = useState<Person[]>([]);
   const [search, setSearch] = useState('');
@@ -41,9 +43,11 @@ export default function PeopleScreen() {
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>People</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('people.title')}</Text>
         <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-          {people.length} contact{people.length !== 1 ? 's' : ''}
+          {people.length === 1
+            ? t('people.contactCount_one')
+            : t('people.contactCount_other', { count: people.length })}
         </Text>
       </View>
 
@@ -53,7 +57,7 @@ export default function PeopleScreen() {
           <MaterialIcons name="search" size={20} color={colors.placeholder} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search people..."
+            placeholder={t('people.searchPlaceholder')}
             placeholderTextColor={colors.placeholder}
             value={search}
             onChangeText={setSearch}
@@ -78,10 +82,10 @@ export default function PeopleScreen() {
           <View style={styles.emptyState}>
             <MaterialIcons name="people-outline" size={48} color={colors.textSecondary} />
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              {search ? 'No results found' : 'No contacts yet'}
+              {search ? t('people.emptyStateSearchTitle') : t('people.emptyStateNoContactsTitle')}
             </Text>
             <Text style={[styles.emptySubtext, { color: colors.placeholder }]}>
-              {search ? 'Try a different search' : 'Tap + to add someone'}
+              {search ? t('people.emptyStateSearchSubtext') : t('people.emptyStateNoContactsSubtext')}
             </Text>
           </View>
         }

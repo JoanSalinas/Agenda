@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/i18n/LanguageContext';
+import { translations } from '@/i18n';
 
 interface CalendarGridProps {
   year: number;
@@ -11,11 +13,12 @@ interface CalendarGridProps {
   onSelectDate: (date: string) => void;
 }
 
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
 export function CalendarGrid({ year, month, selectedDate, datesWithEntries, onSelectDate }: CalendarGridProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const { language } = useTranslation();
+
+  const dayNames = translations[language].calendar.daysShort;
 
   const today = useMemo(() => {
     const d = new Date();
@@ -49,7 +52,7 @@ export function CalendarGrid({ year, month, selectedDate, datesWithEntries, onSe
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        {DAY_NAMES.map((name) => (
+        {dayNames.map((name) => (
           <View key={name} style={styles.headerCell}>
             <Text style={[styles.headerText, { color: colors.textSecondary }]}>{name}</Text>
           </View>

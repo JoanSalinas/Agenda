@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { Person } from "@/lib/models";
 import {
   deletePhoto,
@@ -27,6 +28,7 @@ export default function AddPersonScreen() {
   const colorScheme = useColorScheme() ?? "dark";
   const colors = Colors[colorScheme];
   const router = useRouter();
+  const { t } = useTranslation();
   const { personId } = useLocalSearchParams<{ personId: string }>();
 
   const [name, setName] = useState("");
@@ -138,7 +140,7 @@ export default function AddPersonScreen() {
           <MaterialIcons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.topBarTitle, { color: colors.text }]}>
-          {isEditMode ? "Edit Contact" : "New Contact"}
+          {isEditMode ? t("addPerson.editTitle") : t("addPerson.newTitle")}
         </Text>
         <TouchableOpacity
           onPress={handleSave}
@@ -158,7 +160,7 @@ export default function AddPersonScreen() {
               { color: name.trim() ? "#FFFFFF" : colors.placeholder },
             ]}
           >
-            Save
+            {t("common.save")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -209,7 +211,7 @@ export default function AddPersonScreen() {
               >
                 <MaterialIcons name="image" size={20} color={colors.tint} />
                 <Text style={[styles.photoMenuBtnText, { color: colors.text }]}>
-                  Gallery
+                  {t("common.gallery")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -222,7 +224,7 @@ export default function AddPersonScreen() {
                   color={colors.tint}
                 />
                 <Text style={[styles.photoMenuBtnText, { color: colors.text }]}>
-                  Camera
+                  {t("common.camera")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -240,7 +242,7 @@ export default function AddPersonScreen() {
             />
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              placeholder="Name *"
+              placeholder={t("addPerson.namePlaceholder")}
               placeholderTextColor={colors.placeholder}
               value={name}
               onChangeText={setName}
@@ -257,7 +259,7 @@ export default function AddPersonScreen() {
             />
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              placeholder="Phone"
+              placeholder={t("addPerson.phonePlaceholder")}
               placeholderTextColor={colors.placeholder}
               value={phone}
               onChangeText={setPhone}
@@ -274,7 +276,7 @@ export default function AddPersonScreen() {
             />
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              placeholder="Email"
+              placeholder={t("addPerson.emailPlaceholder")}
               placeholderTextColor={colors.placeholder}
               value={email}
               onChangeText={setEmail}
@@ -292,7 +294,7 @@ export default function AddPersonScreen() {
             />
             <TextInput
               style={[styles.input, styles.notesInput, { color: colors.text }]}
-              placeholder="Notes"
+              placeholder={t("addPerson.notesPlaceholder")}
               placeholderTextColor={colors.placeholder}
               value={notes}
               onChangeText={setNotes}

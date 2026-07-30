@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { shouldUseCloud, getCurrentUserId } from "./AuthContext";
 import {
   AVATAR_COLORS,
   CalendarEntry,
@@ -20,13 +21,6 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
 }
 
-function isSupabaseConfigured(): boolean {
-  return Boolean(
-    process.env.EXPO_PUBLIC_SUPABASE_URL &&
-      process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
-  );
-}
-
 // ─── Helpers: Local Storage Direct ───────────────────────────
 
 async function getAllEntriesLocal(): Promise<CalendarEntry[]> {
@@ -42,7 +36,7 @@ async function getAllPeopleLocal(): Promise<Person[]> {
 // ─── Calendar Entries ────────────────────────────────────────
 
 export async function getAllEntries(): Promise<CalendarEntry[]> {
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
       const { data, error } = await supabase
         .from("entries")
@@ -169,9 +163,9 @@ export async function saveEntry(
     createdAt: Date.now(),
   };
 
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
-      const dbRow = mapEntryToDb(newEntry);
+      const dbRow = mapEntryToDb(newEntry, getCurrentUserId());
       const { error } = await supabase.from("entries").insert([dbRow]);
       if (error) {
         console.warn("Supabase save entry error:", error.message);
@@ -197,7 +191,7 @@ export async function updateEntry(
     updatedUpdates.photos = await Promise.all(updates.photos.map((p) => savePhoto(p)));
   }
 
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
       const dbUpdates: any = {};
       if (updatedUpdates.date !== undefined) dbUpdates.date = updatedUpdates.date;
@@ -238,7 +232,7 @@ export async function updateEntry(
 }
 
 export async function deleteEntry(id: string): Promise<void> {
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
       const { error } = await supabase.from("entries").delete().eq("id", id);
       if (error) {
@@ -262,7 +256,7 @@ export async function getEntryById(id: string): Promise<CalendarEntry | null> {
 // ─── People ──────────────────────────────────────────────────
 
 export async function getAllPeople(): Promise<Person[]> {
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
       const { data, error } = await supabase
         .from("people")
@@ -302,9 +296,9 @@ export async function savePerson(
     createdAt: Date.now(),
   };
 
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
-      const dbRow = mapPersonToDb(newPerson);
+      const dbRow = mapPersonToDb(newPerson, getCurrentUserId());
       const { error } = await supabase.from("people").insert([dbRow]);
       if (error) {
         console.warn("Supabase save person error:", error.message);
@@ -330,7 +324,7 @@ export async function updatePerson(
     updatedUpdates.photo = await savePhoto(updates.photo);
   }
 
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
       const dbUpdates: any = {};
       if (updatedUpdates.name !== undefined) dbUpdates.name = updatedUpdates.name;
@@ -362,7 +356,7 @@ export async function updatePerson(
 }
 
 export async function deletePerson(id: string): Promise<void> {
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
       const { error } = await supabase.from("people").delete().eq("id", id);
       if (error) {
@@ -386,7 +380,7 @@ export async function getPersonById(id: string): Promise<Person | null> {
 // ─── Data Management ─────────────────────────────────────────
 
 export async function clearAllData(): Promise<void> {
-  if (isSupabaseConfigured()) {
+  if (shouldUseCloud()) {
     try {
       await Promise.all([
         supabase.from("entries").delete().neq("id", ""),
@@ -405,4 +399,34 @@ export async function getStats(): Promise<{ entries: number; people: number }> {
     getAllPeople(),
   ]);
   return { entries: entries.length, people: people.length };
+}
+
+// ─── Sync: Local → Cloud ────────────────────────────────────
+
+export async function syncLocalToCloud(): Promise<void> {
+  const userId = getCurrentUserId();
+  if (!userId) return;
+
+  const localEntries = await getAllEntriesLocal();
+  const localPeople = await getAllPeopleLocal();
+
+  if (localEntries.length > 0) {
+    try {
+      const dbRows = localEntries.map((e) => mapEntryToDb(e, userId));
+      const { error } = await supabase.from("entries").upsert(dbRows, { onConflict: "id" });
+      if (error) console.warn("Sync entries error:", error.message);
+    } catch (err) {
+      console.warn("Error syncing entries to cloud:", err);
+    }
+  }
+
+  if (localPeople.length > 0) {
+    try {
+      const dbRows = localPeople.map((p) => mapPersonToDb(p, userId));
+      const { error } = await supabase.from("people").upsert(dbRows, { onConflict: "id" });
+      if (error) console.warn("Sync people error:", error.message);
+    } catch (err) {
+      console.warn("Error syncing people to cloud:", err);
+    }
+  }
 }

@@ -4,11 +4,8 @@ export type EntryCategory =
   | "health"
   | "social"
   | "sports";
-
 export type RecurrenceType = "none" | "daily" | "weekly" | "monthly" | "yearly";
-
 // ─── Application Domain Models ───────────────────────────────
-
 export interface CalendarEntry {
   id: string;
   date: string; // YYYY-MM-DD
@@ -23,7 +20,6 @@ export interface CalendarEntry {
   notifyMinutesBefore?: number; // Minutes before the day starts to notify
   createdAt: number;
 }
-
 export interface Person {
   id: string;
   name: string;
@@ -34,11 +30,10 @@ export interface Person {
   photo?: string; // Local file URI or remote URL for profile picture
   createdAt: number;
 }
-
 // ─── Supabase Database Models (SQL Table Schemas) ────────────
-
 export interface DbEntry {
   id: string;
+  user_id?: string;
   date: string;
   title: string;
   description: string;
@@ -51,9 +46,9 @@ export interface DbEntry {
   notify_minutes_before: number;
   created_at: number;
 }
-
 export interface DbPerson {
   id: string;
+  user_id?: string;
   name: string;
   phone: string;
   email: string;
@@ -62,9 +57,7 @@ export interface DbPerson {
   photo: string | null;
   created_at: number;
 }
-
 // ─── Model Mappers (Domain <-> Database) ─────────────────────
-
 export function mapDbToEntry(row: Partial<DbEntry> & { id: string; date: string; title: string }): CalendarEntry {
   return {
     id: row.id,
@@ -82,8 +75,8 @@ export function mapDbToEntry(row: Partial<DbEntry> & { id: string; date: string;
   };
 }
 
-export function mapEntryToDb(entry: CalendarEntry): DbEntry {
-  return {
+export function mapEntryToDb(entry: CalendarEntry, userId?: string): DbEntry {
+  const row: DbEntry = {
     id: entry.id,
     date: entry.date,
     title: entry.title,
@@ -97,8 +90,9 @@ export function mapEntryToDb(entry: CalendarEntry): DbEntry {
     notify_minutes_before: entry.notifyMinutesBefore ?? 60,
     created_at: entry.createdAt,
   };
+  if (userId) row.user_id = userId;
+  return row;
 }
-
 export function mapDbToPerson(row: Partial<DbPerson> & { id: string; name: string }): Person {
   return {
     id: row.id,
@@ -112,8 +106,8 @@ export function mapDbToPerson(row: Partial<DbPerson> & { id: string; name: strin
   };
 }
 
-export function mapPersonToDb(person: Person): DbPerson {
-  return {
+export function mapPersonToDb(person: Person, userId?: string): DbPerson {
+  const row: DbPerson = {
     id: person.id,
     name: person.name,
     phone: person.phone || "",
@@ -123,10 +117,10 @@ export function mapPersonToDb(person: Person): DbPerson {
     photo: person.photo || null,
     created_at: person.createdAt,
   };
+  if (userId) row.user_id = userId;
+  return row;
 }
-
 // ─── UI Constants ────────────────────────────────────────────
-
 export const CATEGORY_COLORS: Record<EntryCategory, string> = {
   work: "#6C63FF",
   personal: "#FF6B6B",
@@ -134,7 +128,6 @@ export const CATEGORY_COLORS: Record<EntryCategory, string> = {
   social: "#FFE66D",
   sports: "#FF8A5C",
 };
-
 export const CATEGORY_LABELS: Record<EntryCategory, string> = {
   work: "Work",
   personal: "Personal",
@@ -142,7 +135,6 @@ export const CATEGORY_LABELS: Record<EntryCategory, string> = {
   social: "Social",
   sports: "Sports",
 };
-
 export const AVATAR_COLORS = [
   "#FF6B6B",
   "#4ECDC4",

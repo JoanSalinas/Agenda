@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "@/i18n/LanguageContext";
 import { Person } from "@/lib/models";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
@@ -22,6 +23,7 @@ export function ContactCard({ person, onDelete }: ContactCardProps) {
   const colorScheme = useColorScheme() ?? "dark";
   const colors = Colors[colorScheme];
   const router = useRouter();
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   const initials = person.name
@@ -32,14 +34,18 @@ export function ContactCard({ person, onDelete }: ContactCardProps) {
     .slice(0, 2);
 
   const confirmDelete = () => {
-    Alert.alert("Delete Contact", `Remove "${person.name}"?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => onDelete(person.id),
-      },
-    ]);
+    Alert.alert(
+      t("people.deleteAlertTitle"),
+      t("people.deleteAlertMessage", { name: person.name }),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.delete"),
+          style: "destructive",
+          onPress: () => onDelete(person.id),
+        },
+      ]
+    );
   };
 
   const handleEditContact = () => {
@@ -127,7 +133,7 @@ export function ContactCard({ person, onDelete }: ContactCardProps) {
           style={[styles.notesContainer, { borderTopColor: colors.border }]}
         >
           <Text style={[styles.notesLabel, { color: colors.textSecondary }]}>
-            Notes
+            {t("people.notesLabel")}
           </Text>
           <Text style={[styles.notesText, { color: colors.text }]}>
             {person.notes}

@@ -1,9 +1,9 @@
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "@/i18n/LanguageContext";
 import {
   CalendarEntry,
   CATEGORY_COLORS,
-  CATEGORY_LABELS,
   Person,
 } from "@/lib/models";
 import { getAllPeople } from "@/lib/storage";
@@ -30,6 +30,7 @@ export function DayDetail({ date, entries, onDeleteEntry }: DayDetailProps) {
   const colorScheme = useColorScheme() ?? "dark";
   const colors = Colors[colorScheme as "light" | "dark"];
   const router = useRouter();
+  const { t, locale } = useTranslation();
 
   const [allPeople, setAllPeople] = useState<Person[]>([]);
 
@@ -44,7 +45,7 @@ export function DayDetail({ date, entries, onDeleteEntry }: DayDetailProps) {
   const formatDisplayDate = (dateStr: string) => {
     const [y, m, d] = dateStr.split("-").map(Number);
     const dt = new Date(y, m - 1, d);
-    return dt.toLocaleDateString("en-US", {
+    return dt.toLocaleDateString(locale, {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -52,14 +53,18 @@ export function DayDetail({ date, entries, onDeleteEntry }: DayDetailProps) {
   };
 
   const confirmDelete = (id: string, title: string) => {
-    Alert.alert("Delete Entry", `Remove "${title}"?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => onDeleteEntry(id),
-      },
-    ]);
+    Alert.alert(
+      t("calendar.deleteAlertTitle"),
+      t("calendar.deleteAlertMessage", { title }),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.delete"),
+          style: "destructive",
+          onPress: () => onDeleteEntry(id),
+        },
+      ]
+    );
   };
 
   const handleEditEntry = (entryId: string) => {
@@ -88,10 +93,10 @@ export function DayDetail({ date, entries, onDeleteEntry }: DayDetailProps) {
             color={colors.textSecondary}
           />
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            No entries for this day
+            {t("calendar.emptyStateTitle")}
           </Text>
           <Text style={[styles.emptySubtext, { color: colors.placeholder }]}>
-            Tap + to add something
+            {t("calendar.emptyStateSubtext")}
           </Text>
         </View>
       ) : (
@@ -201,7 +206,7 @@ export function DayDetail({ date, entries, onDeleteEntry }: DayDetailProps) {
                             { color: CATEGORY_COLORS[cat] },
                           ]}
                         >
-                          {CATEGORY_LABELS[cat]}
+                          {t(`categories.${cat}`)}
                         </Text>
                       </View>
                     ))}
